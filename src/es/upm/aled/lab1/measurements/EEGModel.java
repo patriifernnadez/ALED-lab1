@@ -56,8 +56,7 @@ public class EEGModel {
 	 * @param measurements The Measurements that make up the EEGModel.
 	 */
 	public EEGModel(Measurement[] measurements) {
-		// TODO
-		
+		this.measurements = new ArrayList<>(Arrays.asList(measurements));
 	}
 
 	/**
@@ -89,9 +88,7 @@ public class EEGModel {
 	 * @return The new EEGModel.
 	 */
 	public EEGModel filter(Filter filter) {
-		// TODO
-		
-		return null;
+		return filter.applyFilter(this);
 	}
 
 	/**
@@ -130,7 +127,22 @@ public class EEGModel {
 	 * @throws IOException Thrown if the file can't be written.
 	 */
 	public void saveFile(String fileName) throws IOException {
-		// TODO
+		File file = new File(fileName);
+		FileOutputStream fos = new FileOutputStream(file);
+		PrintStream ps = new PrintStream(fos);
+
+		int index = 0;
+		for (Measurement m : measurements) {
+			ps.print((index % 256)); //salto de línea
+			
+			for (int i = 0; i < m.numChannels(); i++) {
+				ps.print(", " + m.getChannel(i));
+			}
+			ps.println(); // Salto de línea
+			index++;
+		}
+		
+		ps.close(); // Cerramos la libreta
 		
 	}
 
@@ -247,15 +259,36 @@ public class EEGModel {
 
 	public static void main(String[] args) {
 		if (args.length > 0) {
+			
 			EEGModel eeg = new EEGModel(args[0]);
 			eeg.plotData();
-			// TODO
+						
+			// 1. Creamos los dos filtros que pide el PDF
+				Filter filtroCanales = new FilterExtractChannels(new int[]{1, 2, 3});
+				Filter filtroPeriodo = new FilterExtractPeriod(2750, 5750);
+						
+			// 2. Aplicamos los filtros al modelo original
+				EEGModel eegFiltrado = eeg.filter(filtroCanales).filter(filtroPeriodo);
+					
+			// 3. Dibujamos el nuevo modelo ya recortado
+				eegFiltrado.plotData();
 			
 		} else {
-			EEGModel eeg = new EEGModel();
-			eeg.createSyntheticData(1000);
-			// TODO
+			// Genera 1000 muestras aleatorias en tiempo real
+					EEGModel eeg = new EEGModel();
+					eeg.createSyntheticData(1000);
+						
+			// Guardamos esos datos inventados en un archivo de texto
+					try {
+						eeg.saveFile("Synthetic.txt");
+						System.out.println("Archivo guardado con éxito.");
+					} catch (IOException e) {
+					
+						System.out.println("Ha ocurrido un error al guardar.");
+						e.printStackTrace();
+						}
+					}
 			
 		}
 	}
-}
+

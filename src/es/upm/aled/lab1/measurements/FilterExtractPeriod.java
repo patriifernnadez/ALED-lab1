@@ -8,6 +8,10 @@ package es.upm.aled.lab1.measurements;
  */
 public class FilterExtractPeriod implements Filter {
 
+	// 1. Variables para "recordar" dónde empezamos y dónde acabamos
+		private int inicio;
+		private int fin;
+	
 	/**
 	 * Builds the Filter from the [min, max] range defining the period that needs to
 	 * be extracted. min and max are the indexes of the first and last measurements
@@ -20,14 +24,31 @@ public class FilterExtractPeriod implements Filter {
 	 * @param max End of the period to be extracted.
 	 */
 	public FilterExtractPeriod(int min, int max) {
-		// TODO
+		// 2. El constructor guarda los límites
+				this.inicio = min;
+				this.fin = max;
 		
 	}
 
 	@Override
 	public EEGModel applyFilter(EEGModel eeg) {
-		// TODO
+		// 3. Sacamos todas las muestras originales
+				Measurement[] medidasOriginales = eeg.getMeasurements();
+				
+				// 4. Calculamos cuántas muestras vamos a guardar en total. 
+				// Le sumamos 1 porque ambos límites están incluidos (ej: de la 1 a la 3 hay 3 números: 1, 2 y 3).
+				int tamanoNuevo = (fin - inicio) + 1;
+				
+				// 5. Preparamos la caja nueva con ese tamaño exacto
+				Measurement[] medidasNuevas = new Measurement[tamanoNuevo];
+				
+				// 6. Recorremos solo el trozo que nos interesa y lo copiamos a la caja nueva
+				for (int i = 0; i < tamanoNuevo; i++) {
+					medidasNuevas[i] = medidasOriginales[inicio + i];
+				}
+				
+				// 7. Devolvemos el modelo resultante
+				return new EEGModel(medidasNuevas);
+			}
 		
-		return null;
-	}
 }
